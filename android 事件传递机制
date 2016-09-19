@@ -1,0 +1,104 @@
+1.android 控件的监听事件触发顺序 onTouch事件--->onClick事件 
+2.如果在onTouch事件中修改返回值，将返回值改为True，那么android会将OnClick事件拦截，OnClick事件不会被调用。
+如果将返回值改为Flase，OnClick将会被继续调用。
+
+dispatchOnTouchEvent：
+触摸控件  首先会触发dispatchTouchEvent,然后触发OnTouch事件，如果OnTouch事件返回true，那么dispatchTouchEvent返回为true，源码为：
+           boolean result = false;//默认result为false
+           //如果控件（View）的onTouch返回false或者mOnTouchListener为null（控件没有设置setOnTouchListener方法）
+           //或者控件不是enable的情况下会调运onTouchEvent
+           if (li != null && li.mOnTouchListener != null
+                    && (mViewFlags & ENABLED_MASK) == ENABLED
+                    && li.mOnTouchListener.onTouch(this, event)) {
+                result = true;
+            }//如果li.mOnTouchListener.onTouch(this, event)为true，也就是OnTouch事件返回true，则就不行执行下面的判断，result也就返回true
+            //如果li.mOnTouchListener = null（控件没有设置setOnTouchListener方法） 或者 OnTouch 事件返回false，则会执行这个判断，也就是会执行OnTouchEvent事件
+            if (!result && onTouchEvent(event)) {
+                result = true;
+            }
+如果OnTouch事件返回false，则会继续执行OnTouchEvent事件，如果OnTouchEvent返回true，则源码中result=true，也就是dispatchTouchEvent返回true
+如果OnTouchEvent返回false，则源码中result还是为默认值false，也就是dispatchTouchEvent返回false
+
+注意：
+1.如果控件不是enable的设置了onTouch方法也不会执行，只能通过重写控件的onTouchEvent方法处理，
+dispatchTouchEvent返回值与onTouchEvent返回一样。
+2.如果控件（View）是enable且onTouch返回true情况下，dispatchTouchEvent直接返回true，不会调用onTouchEvent方法。
+
+OnTouchEvent：
+控件的OnClick事件是在OnTouchEvent的ACTION_UP分支中触发监听的。源码为：
+               case MotionEvent.ACTION_UP:
+                    boolean prepressed = (mPrivateFlags & PFLAG_PREPRESSED) != 0;
+                              ...
+
+                        //判断如果不是longPressed则通过post在UI Thread中执行一个PerformClick的Runnable，也就是performClick方法
+                        if (!mHasPerformedLongPress) {
+                            removeLongPressCallback();
+                            if (!focusTaken) {
+                                if (mPerformClick == null) {
+                                    mPerformClick = new PerformClick();
+                                }
+                                if (!post(mPerformClick)) {
+                                    performClick();
+                                }
+                            }
+                        }
+                            ...
+       
+                    break;
+                    case MotionEvent.ACTION_DOWN：
+                          ...
+                    break;
+                    case MotionEvent.ACTION_MOVE：
+                          ...
+                    break;    
+                    case MotionEvent.ACTION_CANCEL：
+                          ...
+                    break;   
+                  return true;
+                  
+                    
+    public boolean performClick() {
+        final boolean result;
+        final ListenerInfo li = mListenerInfo;
+        if (li != null && li.mOnClickListener != null) {//判断li.mOnClickListener是不是为null，决定执行不执行onClick
+            playSoundEffect(SoundEffectConstants.CLICK);
+            li.mOnClickListener.onClick(this);
+            result = true;
+        } else {
+            result = false;
+        }
+
+        sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_CLICKED);
+        return result;
+    }
+
+//mOnClickListener在这里赋值
+   public void setOnClickListener(OnClickListener l) {
+   //只要监听了onClick方法则mOnClickListener就不为null，
+   //而且有意思的是如果调运setOnClickListener方法设置监听且控件是disclickable的情况下默认会帮设置为clickable
+        if (!isClickable()) {
+            setClickable(true);
+        }
+        getListenerInfo().mOnClickListener = l;
+    }
+
+  注意：当dispatchTouchEvent在进行事件分发时，只有前一个action返回true，才会触发下一个action。     
+
+
+
+总结：
+1.监听事件首先执行dispatchTouchEvent方法
+
+2.在dispatchTouchEvent方法中先执行onTouch方法，后执行onClick方法（onClick方法在onTouchEvent中执行，下面会分析）。
+
+3.如果控件（View）的onTouch返回false或者mOnTouchListener为null（控件没有设置setOnTouchListener方法）
+或者控件不是enable的情况下会调运onTouchEvent，dispatchTouchEvent返回值与onTouchEvent返回一样。
+
+4.如果控件不是enable的设置了onTouch方法也不会执行，
+只能通过重写控件的onTouchEvent方法处理（上面已经处理分析了），dispatchTouchEvent返回值与onTouchEvent返回一样。
+
+5.如果控件（View）是enable且onTouch返回true情况下，dispatchTouchEvent直接返回true，不会调用onTouchEvent方法。
+
+6.当dispatchTouchEvent在进行事件分发的时候，只有前一个action返回true，
+才会触发下一个action（也就是说dispatchTouchEvent返回true才会进行下一次action派发）。
+
