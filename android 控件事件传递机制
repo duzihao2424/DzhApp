@@ -102,3 +102,41 @@ OnTouchEvent：
 6.当dispatchTouchEvent在进行事件分发的时候，只有前一个action返回true，
 才会触发下一个action（也就是说dispatchTouchEvent返回true才会进行下一次action派发）。
 
+
+
+
+demo源码：
+public class MyButton extends Button {
+
+    public MyButton(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        super.onTouchEvent(event);//如果注释掉，那么OnClick事件将不会触发
+        Log.i("onTouchEvent",event.getAction()+"");
+        //如果return true,那么表示该方法消费了此次事件，
+        // 如果return false，那么表示该方法并未处理完全，该事件仍然需要以某种方式传递下去继续等待处理
+        return false;
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        super.dispatchTouchEvent(event);
+        Log.i("dispatchTouchEvent",event.getAction()+"");
+        //如果返回false，只会执行第一次按下（DOWN）时间，不会执行抬起（UP）、移动（MOVE）等事件
+        return  true;
+    }
+}
+
+MainActivity部分代码：
+        myButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                Log.i("onTouch",motionEvent.getAction()+"");
+                //如果返回true，则不执行OnTouchEvent以及OnClick事件
+                return false;
+            }
+        });
