@@ -1,0 +1,67 @@
+先上源码：
+
+class Person
+{
+  //1.私有构造函数
+  private Person()
+  {
+  
+  }
+  
+  //私有化静态实例
+  private static Person instants;
+  
+  public static Person getIntants()
+  {
+    if(instant==null)
+    {
+      synchronized (Singleton.class) //双重检查锁定
+      {
+          if(instant==null)
+          {
+            instant=new Person();
+          }
+      }
+    }
+    return instants;
+    
+  }
+  
+}
+
+Person per = Person.getInstants();//调用
+
+//上面的单例模式，可能会引发安全隐患，imageLoader采用的就是上面这种方法
+
+//内部类创建单例，优点：延迟加载，线程安全（java中class加载时互斥的），也减少了内存消耗
+public class Person {  
+  
+    private static class Person {  
+        private static Person instance = new Person();  
+    }  
+  
+    /** 
+     * 私有的构造函数 
+     */  
+    private Person() {  
+  
+    }  
+  
+    public static Person getInstance() {  
+        return SingletonHolder.instance;  
+    }  
+  
+}
+
+关于在android中的应用：日历模式，SQLite的创建，单例模式创建Activity管理器（用于完全退出APP）
+
+
+
+
+
+
+
+
+
+
+
