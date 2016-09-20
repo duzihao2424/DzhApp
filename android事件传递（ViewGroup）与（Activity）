@@ -1,0 +1,21 @@
+1.ViewGroup的dispatchTouchEvent()中默认（不在其他地方调运requestDisallowInterceptTouchEvent方法设置禁止拦截标记）
+首先调用了onInterceptTouchEvent()方法。
+
+2.Android事件派发是先传递到最顶级的ViewGroup，再由ViewGroup递归传递到View的。
+
+3.在ViewGroup中可以通过onInterceptTouchEvent方法对事件传递进行拦截，onInterceptTouchEvent方法返回true代表不允许事件继续向子View传递，返回false代表不对事件进行拦截，默认返回false。
+
+4.子View中如果将传递的事件消费掉，ViewGroup中将无法接收到任何事件。
+
+
+
+
+在Activity的触摸屏事件派发中：
+
+1.首先会触发Activity的dispatchTouchEvent方法。
+
+2.dispatchTouchEvent方法中如果是ACTION_DOWN的情况下会接着触发onUserInteraction方法。
+
+3.接着在dispatchTouchEvent方法中会通过Activity的root View（id为content的FrameLayout），实质是ViewGroup，通过super.dispatchTouchEvent把touchevent派发给各个activity的子view，也就是我们再Activity.onCreat方法中setContentView时设置的view。
+
+4.若Activity下面的子view拦截了touchevent事件(返回true)则Activity.onTouchEvent方法就不会执行。
