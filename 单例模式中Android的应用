@@ -55,6 +55,58 @@ public class Person {
 
 关于在android中的应用：日历模式，SQLite的创建，单例模式创建Activity管理器（用于完全退出APP）
 
+例：完全退出APP
+
+public class Live extends Application{
+	private ArrayList<Activity>mList=new ArrayList<Activity>();
+	
+	private Live(){
+		
+	}
+	
+	private static Live instant;
+	
+	public static Live getIntants(){
+		if(instant==null){
+			synchronized(Live.class){
+				if(instant==null){
+					
+					instant=new Live();
+				}
+				
+			}
+		}
+		return instant;
+	}
+	
+	public void addActivity(Activity a ){
+		mList.add(a);
+	}
+	
+	public void exit(){
+		
+//		for(int i=0;i<mList.size();i++){
+//			mList.get(i).finish();
+//		}
+        try { 
+            for (Activity activity : mList) { 
+                if (activity != null) 
+                    activity.finish(); 
+            } 
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+        } finally { 
+            System.exit(0); 
+        } 
+	}
+
+}
+
+
+
+
+
+
 
 
 
