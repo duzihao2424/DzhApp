@@ -23,8 +23,3 @@ this：它代表当前对象名
 
 
 HashMap 与 TreeMap 的区别，HashMap时无序的，TreeMap是按照自己的顺序来排序，今后如果需要排序，可以用TreeMap来对参数排序，并进行传递。
-
-
-
-java 文件操作 
-
